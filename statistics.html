@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>One Premier Academy - Statistics</title>
+  
+  <!-- Import Jost font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="css/player-statistics.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+    <div class="sidebar-sticky">
+      <div class="text-center mb-4">
+        <h4 class="text-white">Player Database</h4>
+      </div>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link" href="/dashboard">
+            <i class="fas fa-home me-2"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/players">
+            <i class="fas fa-users me-2"></i>
+            Players
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/statistics">
+            <i class="fas fa-chart-line me-2"></i>
+            Statistics
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/meetings">
+            <i class="fas fa-calendar me-2"></i>
+            IDP Meetings
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/files">
+            <i class="fas fa-file me-2"></i>
+            Files & Photos
+          </a>
+        </li>
+        <li class="nav-item mt-5">
+          <a class="nav-link" href="#" id="logout-link">
+            <i class="fas fa-sign-out-alt me-2"></i>
+            Logout
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+  
+  <!-- Main content -->
+  <main class="main-content">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+      <h1 class="h2">Player Statistics</h1>
+      <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-primary" id="add-stats-btn">
+          <i class="fas fa-plus me-2"></i> Add New Stats
+        </button>
+      </div>
+    </div>
+    
+    <!-- Player selection -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="player-select" class="form-label">Select Player</label>
+            <select class="form-select" id="player-select">
+              <option value="">Choose a player...</option>
+              <!-- Player options will be loaded here -->
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="date-range" class="form-label">Date Range</label>
+            <select class="form-select" id="date-range">
+              <option value="last30">Last 30 Days</option>
+              <option value="last90">Last 90 Days</option>
+              <option value="season">Current Season</option>
+              <option value="all">All Time</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label d-block">&nbsp;</label>
+            <button class="btn btn-secondary w-100" id="load-stats-btn">
+              <i class="fas fa-sync-alt me-2"></i> Load Stats
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Player info and summary stats -->
+    <div id="player-info-container" class="mb-4" style="display: none;">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h3 id="player-name">Player Name</h3>
+              <p class="mb-1"><strong>Team:</strong> <span id="player-team">Team</span></p>
+              <p class="mb-1"><strong>Position:</strong> <span id="player-position">Position</span></p>
+              <p class="mb-1"><strong>Type:</strong> <span id="player-type">Type</span></p>
+            </div>
+            <div class="col-md-6 text-md-end">
+              <p class="mb-1"><strong>Player Number:</strong> <span id="player-number">Number</span></p>
+              <p class="mb-1"><strong>Date of Birth:</strong> <span id="player-dob">DOB</span></p>
+              <p class="mb-1"><strong>Coach:</strong> <span id="player-coach">Coach</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Statistics tabs -->
+    <div id="stats-container" style="display: none;">
+      <ul class="nav nav-tabs mb-4" id="statsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab" aria-controls="performance" aria-selected="true">
+            Performance
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="technical-tab" data-bs-toggle="tab" data-bs-target="#technical" type="button" role="tab" aria-controls="technical" aria-selected="false">
+            Technical Skills
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="physical-tab" data-bs-toggle="tab" data-bs-target="#physical" type="button" role="tab" aria-controls="physical" aria-selected="false">
+            Physical
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance" type="button" role="tab" aria-controls="attendance" aria-selected="false">
+            Attendance
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
+            History
+          </button>
+        </li>
+      </ul>
+      
+      <div class="tab-content" id="statsTabContent">
+        <!-- Performance Tab -->
+        <div class="tab-pane fade show active" id="performance" role="tabpanel" aria-labelledby="performance-tab">
+          <div class="row mb-4">
+            <div class="col-md-3">
+              <div class="card stat-card bg-light">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-muted mb-0">Overall Rating</h6>
+                      <h3 class="mb-0" id="overall-rating">4.2</h3>
+                      <div class="skill-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                      </div>
+                    </div>
+                    <div class="stat-icon bg-primary rounded-circle">
+                      <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card stat-card bg-light">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-muted mb-0">Games Played</h6>
+                      <h3 class="mb-0" id="games-played">12</h3>
+                    </div>
+                    <div class="stat-icon bg-success rounded-circle">
+                      <i class="fas fa-futbol text-white"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card stat-card bg-light">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-muted mb-0">Goals Scored</h6>
+                      <h3 class="mb-0" id="goals-scored">7</h3>
+                    </div>
+                    <div class="stat-icon bg-warning rounded-circle">
+                      <i class="fas fa-trophy text-white"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="card stat-card bg-light">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="text-muted mb-0">Assists</h6>
+                      <h3 class="mb-0" id="assists">5</h3>
+                    </div>
+                    <div class="stat-icon bg-info rounded-circle">
+                      <i class="fas fa-hands-helping text-white"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-header">
+                  <i class="fas fa-chart-line me-2"></i> Performance Trend
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card mb-4">
+                <div class="card-header">
+                  <i class="fas fa-chart-pie me-2"></i> Performance Breakdown
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="performanceBreakdownChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Technical Skills Tab -->
+        <div class="tab-pane fade" id="technical" role="tabpanel" aria-labelledby="technical-tab">
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-sliders-h me-2"></i> Technical Skills Assessment
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="chart-container">
+                    <canvas id="technicalSkillsChart"></canvas>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Skill</th>
+                        <th>Rating</th>
+                        <th>Progress</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Passing</td>
+                        <td>
+                          <div class="skill-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Shooting</td>
+                        <td>
+                          <div class="skill-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <i class="far fa-star"></i>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="progress">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Dribbling</td>
+                        <td>
+                          <div class="skill-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="progress">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Ball Control</td>
+                        <td>
+                          <div class="skill-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="progress">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Tackling</td>
+                        <td>
+                          <div class="skill-rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <i class="far fa-star"></i>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="progress">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Physical Tab -->
+        <div class="tab-pane fade" id="physical" role="tabpanel" aria-labelledby="physical-tab">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <i class="fas fa-running me-2"></i> Physical Attributes
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="physicalAttributesChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <i class="fas fa-chart-line me-2"></i> Fitness Progress
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="fitnessProgressChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <i class="fas fa-heartbeat me-2"></i> Physical Test Results
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Test Date</th>
+                      <th>Speed (30m)</th>
+                      <th>Agility</th>
+                      <th>Endurance</th>
+                      <th>Strength</th>
+                      <th>Flexibility</th>
+                      <th>Overall</th>
+                    </tr>
+                  </thead>
+                  <tbody id="physical-test-results">
+                    <tr>
+                      <td>2025-07-15</td>
+                      <td>4.2s <span class="badge bg-success">+0.2s</span></td>
+                      <td>8.7s <span class="badge bg-success">+0.3s</span></td>
+                      <td>Level 12 <span class="badge bg-success">+1</span></td>
+                      <td>Good <span class="badge bg-info">Same</span></td>
+                      <td>Average <span class="badge bg-warning">Same</span></td>
+                      <td>
+                        <div class="progress">
+                          <div class="progress-bar bg-success" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2025-05-10</td>
+                      <td>4.4s</td>
+                      <td>9.0s</td>
+                      <td>Level 11</td>
+                      <td>Good</td>
+                      <td>Average</td>
+                      <td>
+                        <div class="progress">
+                          <div class="progress-bar bg-info" role="progressbar" style="width: 78%" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100">78%</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2025-03-05</td>
+                      <td>4.5s</td>
+                      <td>9.2s</td>
+                      <td>Level 10</td>
+                      <td>Average</td>
+                      <td>Average</td>
+                      <td>
+                        <div class="progress">
+                          <div class="progress-bar bg-warning" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">70%</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Attendance Tab -->
+        <div class="tab-pane fade" id="attendance" role="tabpanel" aria-labelledby="attendance-tab">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <i class="fas fa-calendar-check me-2"></i> Attendance Overview
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header">
+                  <i class="fas fa-calendar-alt me-2"></i> Monthly Attendance
+                </div>
+                <div class="card-body">
+                  <div class="chart-container">
+                    <canvas id="monthlyAttendanceChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <i class="fas fa-list-alt me-2"></i> Attendance Records
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Session Type</th>
+                      <th>Status</th>
+                      <th>Reason (if absent)</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="attendance-records">
+                    <tr>
+                      <td>2025-08-15</td>
+                      <td>Training</td>
+                      <td><span class="badge bg-success">Present</span></td>
+                      <td>-</td>
+                      <td>Arrived 10 minutes early</td>
+                    </tr>
+                    <tr>
+                      <td>2025-08-12</td>
+                      <td>Match</td>
+                      <td><span class="badge bg-success">Present</span></td>
+                      <td>-</td>
+                      <td>Played full game</td>
+                    </tr>
+                    <tr>
+                      <td>2025-08-08</td>
+                      <td>Training</td>
+                      <td><span class="badge bg-danger">Absent</span></td>
+                      <td>Illness</td>
+                      <td>Parent notified coach in advance</td>
+                    </tr>
+                    <tr>
+                      <td>2025-08-05</td>
+                      <td>Training</td>
+                      <td><span class="badge bg-success">Present</span></td>
+                      <td>-</td>
+                      <td>-</td>
+                    </tr>
+                    <tr>
+                      <td>2025-08-01</td>
+                      <td>Match</td>
+                      <td><span class="badge bg-warning">Late</span></td>
+                      <td>-</td>
+                      <td>Arrived 15 minutes late due to traffic</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- History Tab -->
+        <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-history me-2"></i> Statistics History
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Games</th>
+                      <th>Goals</th>
+                      <th>Assists</th>
+                      <th>Rating</th>
+                      <th>Coach</th>
+                      <th>Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="stats-history">
+                    <tr>
+                      <td>2025-08-20</td>
+                      <td>12</td>
+                      <td>7</td>
+                      <td>5</td>
+                      <td>4.2</td>
+                      <td>Coach Smith</td>
+                      <td>Excellent progress in passing skills</td>
+                    </tr>
+                    <tr>
+                      <td>2025-07-15</td>
+                      <td>10</td>
+                      <td>5</td>
+                      <td>4</td>
+                      <td>4.0</td>
+                      <td>Coach Smith</td>
+                      <td>Good improvement in shooting accuracy</td>
+                    </tr>
+                    <tr>
+                      <td>2025-06-10</td>
+                      <td>8</td>
+                      <td>3</td>
+                      <td>3</td>
+                      <td>3.8</td>
+                      <td>Coach Johnson</td>
+                      <td>Needs to work on defensive positioning</td>
+                    </tr>
+                    <tr>
+                      <td>2025-05-05</td>
+                      <td>6</td>
+                      <td>2</td>
+                      <td>2</td>
+                      <td>3.5</td>
+                      <td>Coach Johnson</td>
+                      <td>Showing good potential in midfield role</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <i class="fas fa-comments me-2"></i> Coach Comments
+            </div>
+            <div class="card-body">
+              <div class="mb-4">
+                <div class="d-flex justify-content-between">
+                  <h5>Coach Smith - August 2025</h5>
+                  <span class="text-muted">2025-08-20</span>
+                </div>
+                <p>
+                  Liam has shown excellent progress over the past month. His passing accuracy has improved significantly, and he's becoming more confident in taking shots from distance. He's also developing good leadership qualities on the field. Areas to focus on include defensive positioning and decision-making under pressure.
+                </p>
+              </div>
+              <div class="mb-4">
+                <div class="d-flex justify-content-between">
+                  <h5>Coach Johnson - June 2025</h5>
+                  <span class="text-muted">2025-06-10</span>
+                </div>
+                <p>
+                  Liam is showing good technical skills but needs to work on his defensive awareness. He has a natural talent for dribbling and creating opportunities. We've been working on his positioning during defensive phases, and he's starting to show improvement. His attitude and work ethic are excellent.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- No player selected message -->
+    <div id="no-player-selected" class="text-center py-5">
+      <i class="fas fa-user-chart fa-4x text-muted mb-3"></i>
+      <h3 class="text-muted">Select a player to view statistics</h3>
+      <p class="text-muted">Choose a player from the dropdown menu above and click "Load Stats"</p>
+    </div>
+  </main>
+  
+  <!-- Add Statistics Modal -->
+  <div class="modal fade" id="addStatsModal" tabindex="-1" aria-labelledby="addStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addStatsModalLabel">Add Player Statistics</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="stats-form" class="needs-validation" novalidate>
+            <!-- Player and Date Selection -->
+            <div class="form-section">
+              <h4>Basic Information</h4>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="stats-player-select" class="form-label required-field">Player</label>
+                  <select class="form-select" id="stats-player-select" required>
+                    <option value="">Select Player</option>
+                    <!-- Player options will be loaded here -->
+                  </select>
+                  <div class="invalid-feedback">
+                    Please select a player.
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="stats-date" class="form-label required-field">Date</label>
+                  <input type="date" class="form-control" id="stats-date" required>
+                  <div class="invalid-feedback">
+                    Please provide a date.
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="stats-type" class="form-label required-field">Session Type</label>
+                  <select class="form-select" id="stats-type" required>
+                    <option value="">Select Type</option>
+                    <option value="training">Training</option>
+                    <option value="match">Match</option>
+                    <option value="assessment">Assessment</option>
+                  </select>
+                  <div class="invalid-feedback">
+                    Please select a session type.
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="stats-coach" class="form-label required-field">Coach</label>
+                  <input type="text" class="form-control" id="stats-coach" required>
+                  <div class="invalid-feedback">
+                    Please provide the coach's name.
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Performance Stats -->
+            <div class="form-section">
+              <h4>Performance Stats</h4>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="stats-games" class="form-label">Games Played</label>
+                  <input type="number" class="form-control" id="stats-games" min="0">
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-goals" class="form-label">Goals</label>
+                  <input type="number" class="form-control" id="stats-goals" min="0">
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-assists" class="form-label">Assists</label>
+                  <input type="number" class="form-control" id="stats-assists" min="0">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="stats-rating" class="form-label">Overall Rating (1-5)</label>
+                  <input type="range" class="form-range" id="stats-rating" min="1" max="5" step="0.1" value="3">
+                  <div class="d-flex justify-content-between">
+                    <span>1</span>
+                    <span>2</span>
+                    <span>3</span>
+                    <span>4</span>
+                    <span>5</span>
+                  </div>
+                  <div class="text-center mt-2">
+                    <span id="rating-value">3.0</span> / 5
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Technical Skills -->
+            <div class="form-section">
+              <h4>Technical Skills</h4>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="stats-passing" class="form-label">Passing (1-5)</label>
+                  <input type="range" class="form-range" id="stats-passing" min="1" max="5" step="0.5" value="3">
+                  <div class="text-center mt-2">
+                    <span id="passing-value">3.0</span> / 5
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-shooting" class="form-label">Shooting (1-5)</label>
+                  <input type="range" class="form-range" id="stats-shooting" min="1" max="5" step="0.5" value="3">
+                  <div class="text-center mt-2">
+                    <span id="shooting-value">3.0</span> / 5
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-dribbling" class="form-label">Dribbling (1-5)</label>
+                  <input type="range" class="form-range" id="stats-dribbling" min="1" max="5" step="0.5" value="3">
+                  <div class="text-center mt-2">
+                    <span id="dribbling-value">3.0</span> / 5
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="stats-ball-control" class="form-label">Ball Control (1-5)</label>
+                  <input type="range" class="form-range" id="stats-ball-control" min="1" max="5" step="0.5" value="3">
+                  <div class="text-center mt-2">
+                    <span id="ball-control-value">3.0</span> / 5
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-tackling" class="form-label">Tackling (1-5)</label>
+                  <input type="range" class="form-range" id="stats-tackling" min="1" max="5" step="0.5" value="3">
+                  <div class="text-center mt-2">
+                    <span id="tackling-value">3.0</span> / 5
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-positioning" class="form-label">Positioning (1-5)</label>
+                  <input type="range" class="form-range" id="stats-positioning" min="1" max="5" step="0.5" value="3">
+                  <div class="text-center mt-2">
+                    <span id="positioning-value">3.0</span> / 5
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Physical Tests -->
+            <div class="form-section">
+              <h4>Physical Tests</h4>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="stats-speed" class="form-label">Speed (30m) in seconds</label>
+                  <input type="number" class="form-control" id="stats-speed" step="0.1" min="3" max="10">
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-agility" class="form-label">Agility Test in seconds</label>
+                  <input type="number" class="form-control" id="stats-agility" step="0.1" min="5" max="15">
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="stats-endurance" class="form-label">Endurance Level</label>
+                  <input type="number" class="form-control" id="stats-endurance" min="1" max="20">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="stats-strength" class="form-label">Strength Assessment</label>
+                  <select class="form-select" id="stats-strength">
+                    <option value="">Select Assessment</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Needs Improvement">Needs Improvement</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="stats-flexibility" class="form-label">Flexibility Assessment</label>
+                  <select class="form-select" id="stats-flexibility">
+                    <option value="">Select Assessment</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Needs Improvement">Needs Improvement</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Notes -->
+            <div class="form-section">
+              <h4>Notes & Comments</h4>
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="stats-notes" class="form-label">Coach Notes</label>
+                  <textarea class="form-control" id="stats-notes" rows="4"></textarea>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="save-stats-btn">Save Statistics</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- Page Specific JavaScript -->
+    <script src="js/player-statistics.js"></script>
+    
+</body>
+</html>
